@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Caesar Cipher</title>
+</head>
+
+<body>
+    <h1>Caesar Cipher</h1>
+    <form th:action="@{/caesar/encrypt}" method="post">
+        <label>Message:</label><br>
+        <input type="text" name="message" placeholder="Enter your message" required /><br><br>
+
+        <label>Shift:</label><br>
+        <input type="number" name="shift" value="3" required /><br><br>
+
+        <button type="submit">Encrypt</button>
+    </form>
+
+    <h1>Decrypt Caesar Cipher</h1>
+    <form th:action="@{/caesar/decrypt}" method="post">
+        <label>Cipher Text:</label><br>
+        <input type="text" name="message" placeholder="Enter your message" required /><br><br>
+    
+        <label>Shift:</label><br>
+        <input type="number" name="shift" value="3" required /><br><br>
+    
+        <button type="submit">Decrypt</button>
+    </form>
+
+    <p><a th:href="@{/}">Back to Home</a></p>
+</body>
+
+</html>

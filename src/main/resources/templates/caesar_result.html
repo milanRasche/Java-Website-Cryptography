@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Caesar Cipher Result</title>
+</head>
+
+<body>
+    <h1>Encrypted Result</h1>
+
+    <p><strong>Original Message:</strong> <span th:text="${message}"></span></p>
+    <p><strong>Shift:</strong> <span th:text="${shift}"></span></p>
+    <p><strong>Encrypted Message:</strong> <span th:text="${encrypted}"></span></p>
+
+    <p><a th:href="@{/caesar}">Encrypt another message</a></p>
+    <p><a th:href="@{/}">← Back to Home</a></p>
+</body>
+
+</html>

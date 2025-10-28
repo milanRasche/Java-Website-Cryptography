@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns="http://www.thymeleaf.org">
+    <head>
+        <title>Home Page</title>
+    </head>
+    <body>
+        <h1 th:text="${message}">Welcome Message</h1>
+        <a th:href="@{/caesar}">
+            <button>Try Caesar Cipher</button>
+        </a>
+    </body>
+</html>
