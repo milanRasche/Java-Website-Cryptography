@@ -14,10 +14,10 @@ public class SubstitutionCipherService{
             char c = text.charAt(i);
             
             if(Character.isLowerCase(c)){
-                int toSubsitute = (char) ((c - 'a') % 26);
+                int toSubsitute = (int) ((c - 'a') % 26);
                 c = lowerKey.charAt(toSubsitute);
             } else if(Character.isUpperCase(c)){
-                int toSubsitute = (char) ((c - 'A') % 26);
+                int toSubsitute = (int) ((c - 'A') % 26);
                 c = upperKey.charAt(toSubsitute);
             }
 

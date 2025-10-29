@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Substitution Cipher</title>
+</head>
+
+<body>
+    <p>The key is encoded as follows. The letter entered at any potition of the key matches to the corresponding letter at that position of the alphabet</p>
+    <p>ex key: QWERTYUIOPASDFGHJKLZXCVBNM</p>
+    <p>Input: ABCXYZ -> Output: QWEBNM</p>
+
+    <h1>Substitution Cipher</h1>
+    <form th:action="@{/substitution/encrypt}" method="post">
+        <label>Message:</label><br>
+        <input type="text" name="message" placeholder="Enter your message" required /><br><br>
+
+        <label>Key:</label><br>
+        <input type="message" name="key" minlength="26" maxlength="26" placeholder="Enter your message" required /><br><br>
+
+        <button type="submit">Encrypt</button>
+    </form>
+
+    <h1>Decrypt Substitution Cipher</h1>
+    <form th:action="@{/substitution/decrypt}" method="post">
+        <label>Cipher Text:</label><br>
+        <input type="text" name="message" placeholder="Enter your message" required /><br><br>
+
+        <label>Key:</label><br>
+        <input type="text" name="key" maxlength="26" placeholder="Enter your message" required /><br><br>
+
+        <button type="submit">Decrypt</button>
+    </form>
+
+    <p><a th:href="@{/}">Back to Home</a></p>
+</body>
+
+</html>
