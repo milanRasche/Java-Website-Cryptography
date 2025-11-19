@@ -7,22 +7,69 @@ import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Service;
 
-//TODO: Add actuall AES Main Loop (Adding round key and performing rounds of sub, shift, mix, add)
-
 @Service
 public class AdvancedEncryptionStandard {
     
     public String encryptECB(String text, int bits){
-        if(bits != 124 || bits != 196 || bits != 256){
-            //throw error
+        if (bits != 128 && bits != 192 && bits != 256) {
+            throw new IllegalArgumentException("AES only supports 128/192/256 bits");
         }
+
         
         //Breaking up the text into bits sized blocks
-        byte[] bytes = text.getBytes();
+        byte[] plaintextBytes = text.getBytes();
+        byte[][] aesBlocks = toBlocks(plaintextBytes);
+
+        SecretKey encryptionKey;
+        try {
+            encryptionKey = generateKey(bits);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "error";
+        }
+        int[] expandedKey = expandedKey(encryptionKey.getEncoded());
+
+        int Nk = encryptionKey.getEncoded().length / 4;
+        int Nr = Nk + 6;
+
+        byte[][] encryptedBlocks = new byte[aesBlocks.length][16];
+
+
         
-
-
         return "";
+    }
+
+    private static byte[] addFirstRoundKey(byte[] state, byte[] roundKey){
+        byte[] out = new byte[16];
+        for (int i = 0; i < 16; i++){
+            out[i] = (byte)(state[i] ^ roundKey[i]);
+        }
+        return out;
+    }
+
+
+    private static byte[] performRound(byte[] aesBlock, byte[] roundKey, boolean isFinalRound){
+        byte[] state = aesBlock.clone();
+
+        //Add sbox substitution
+        for (int i = 0; i < 16; i++){
+            state[i] = SBOX[state[i] & 0xFF];
+        }
+
+        //Shift Rows
+        state = shiftRows(state);
+
+        //Mix Columns (gets skipped in the final round)
+        if (!isFinalRound) {
+            state = mixColumns(state)
+        }
+
+        //Add the round key
+        for (int i = 0; i < 16; i++){
+            state[i] ^= roundKey[i];
+        }
+        
+        return state;
     }
 
     private static byte[][] toBlocks(byte[] bytes){
@@ -52,6 +99,64 @@ public class AdvancedEncryptionStandard {
         }
 
         return blocks;
+    }
+
+    private static byte[] shiftRows(byte[] s) {
+        byte[] r = new byte[16];
+
+        // row 0
+        r[0] = s[0];  r[4] = s[4];  r[8] = s[8];  r[12] = s[12];
+
+        // row 1 (left shift by 1)
+        r[1] = s[5];  r[5] = s[9];  r[9]  = s[13]; r[13] = s[1];
+
+        // row 2 (left shift by 2)
+        r[2] = s[10]; r[6] = s[14]; r[10] = s[2]; r[14] = s[6];
+
+        // row 3 (left shift by 3)
+        r[3] = s[15]; r[7] = s[3];  r[11] = s[7]; r[15] = s[11];
+
+        return r;
+    }   
+
+    //Galois Mulitplication Help
+    public static byte gmul(byte a, int b){
+        byte result = 0;
+        byte temp = a;
+
+        while(b > 0) {
+            if ((b & 1) != 0) {
+                result ^= temp;
+            }
+            boolean c = (temp & 0x80) != 0;
+            temp <<= 1;
+            if (c) {
+                temp ^= 0x1B; 
+            }
+            b >>= 1;
+        }
+
+        return result;
+    }
+        
+    //Performs colum mixing diffusion.
+    private static byte[] mixColumns(byte[] s) {
+        byte[] r = new byte[16];
+
+        for (int c = 0; c < 4; c++) {
+            int i = c * 4;
+
+            byte a0 = s[i];
+            byte a1 = s[i+1];
+            byte a2 = s[i+2];
+            byte a3 = s[i+3];
+
+            r[i]   = (byte) (gmul(a0,2) ^ gmul(a1,3) ^ a2 ^ a3);
+            r[i+1] = (byte) (a0 ^ gmul(a1,2) ^ gmul(a2,3) ^ a3);
+            r[i+2] = (byte) (a0 ^ a1 ^ gmul(a2,2) ^ gmul(a3,3));
+            r[i+3] = (byte) (gmul(a0,3) ^ a1 ^ a2 ^ gmul(a3,2));
+        }
+        return r;
     }
 
     //Generation of a Cryptographically Secure Psudo-Random Key
@@ -93,6 +198,21 @@ public class AdvancedEncryptionStandard {
         }
 
         return expandedKey;
+    }
+
+    private static byte[] getRoundKey(int[] expandedKey, int round) {
+        byte[] rk = new byte[16];
+        int start = round * 4; // 4 words per round
+
+        for (int i = 0; i < 4; i++) {
+            int w = expandedKey[start + i];
+            rk[i*4]     = (byte)((w >>> 24) & 0xFF);
+            rk[i*4 + 1] = (byte)((w >>> 16) & 0xFF);
+            rk[i*4 + 2] = (byte)((w >>> 8) & 0xFF);
+            rk[i*4 + 3] = (byte)(w & 0xFF);
+        }
+
+        return rk;
     }
 
     //AES Round Constant (RCON) Table. Ensures Cryptographic Destinction after substituion and rotation through an XOR action.
